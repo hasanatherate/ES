@@ -1,42 +1,68 @@
-PRESERVE; Preserve 8-byte stack alignment
-THUMB ; 16-bit mode
-AREA RESET, CODE, READONLY ; Vector table mapped to
-address 0 at reset
-E X P O RT _Vectors; Linker requires _
-vectors to b e
-exported
-Vectors
-DCD 0X20001000; Stack pointer value when the stack is
-empty
-DCD START; Reset vector
-A L I G N
-AREA MY_CODE, CODE, READONLY
-EXPORT START; Linker requires START as the user code
-entry point
-; Constants and data
-MEMORY _LOCATION_ DCD DCD 0xBO; First 8-bit value
-(OxBO)
-MEMORY_LOCATION 2 DCD OxED ; Second 8-bit value
-(OxED)
-; Variables to store the count of ones and zeros
-COUNT_ONES DCD 0; Count of ones for 0xBO and OxED
-COUNT_ZEROS DCD 0; Count of zeros for OxB0 and OxED
-S TA RT
-; Load the first 8-bit value from memory location 1
-(0xB0)
-LDR RO, =MEMORY_LOCATION 1
-LDRB R1, [RO] ; Load OxBO
-; Load the second 8-bit value from memory location 2
-(OxED)
-LDR RO, =MEMORY_LOCATION_2
-LDRB R2, [RO]; Load OxED
-; Initialize counters
-MOV R3, #0; Counter for ones in 0xBO and OxED
-MOV R4, #0; Counter for zeros in 0xB0 and 0xED
-C O U N T L O O P
-; Count ones and zeros for 0xB0
-ANDS R5, R1, #1; Check the least significant bit
-ADD R3, R3, R5; Increment ones counter if it's 1
-EOR R5, R5, #1 ; Flip the bit
-ADD R4, R4, R5; Increment zeros counter if it's not 1
-; C o u n t ones and zeros for OxED
+        PRESERVE8                ; 8-byte stack alignment
+        THUMB                    ; 16-bit Thumb mode
+
+        AREA RESET, CODE, READONLY
+        EXPORT __Vectors
+
+__Vectors
+        DCD     0x20001000       ; Initial stack pointer
+        DCD     START            ; Reset handler
+
+        ALIGN
+
+        AREA MY_CODE, CODE, READONLY
+        ENTRY
+        EXPORT START
+
+START
+        ; Load 8-bit values from memory
+        LDR     R0, =MEMORY1
+        LDRB    R1, [R0]         ; R1 = 0xB0
+
+        LDR     R0, =MEMORY2
+        LDRB    R2, [R0]         ; R2 = 0xED
+
+        ; Initialize counters
+        MOV     R3, #0           ; Count of 1s
+        MOV     R4, #0           ; Count of 0s
+
+        ; Count bits in R1 (first byte)
+        MOV     R5, #8
+COUNT_LOOP1
+        ANDS    R6, R1, #1       ; Isolate LSB
+        ADD     R3, R3, R6       ; Increment 1s count if bit is 1
+        EOR     R6, R6, #1
+        ADD     R4, R4, R6       ; Increment 0s count if bit is 0
+        LSRS    R1, R1, #1       ; Shift right to check next bit
+        SUBS    R5, R5, #1
+        BNE     COUNT_LOOP1
+
+        ; Count bits in R2 (second byte)
+        MOV     R5, #8
+COUNT_LOOP2
+        ANDS    R6, R2, #1
+        ADD     R3, R3, R6
+        EOR     R6, R6, #1
+        ADD     R4, R4, R6
+        LSRS    R2, R2, #1
+        SUBS    R5, R5, #1
+        BNE     COUNT_LOOP2
+
+        ; Store results
+        LDR     R0, =COUNT_ONES
+        STR     R3, [R0]
+
+        LDR     R0, =COUNT_ZEROS
+        STR     R4, [R0]
+
+STOP
+        B       STOP            ; Infinite loop
+
+        ; --- Data Section ---
+        AREA MY_DATA, DATA, READWRITE
+MEMORY1         DCD     0xB0        ; First 8-bit value
+MEMORY2         DCD     0xED        ; Second 8-bit value
+COUNT_ONES      DCD     0
+COUNT_ZEROS     DCD     0
+
+        END
