@@ -1,0 +1,18 @@
+        AREA MY_CODE, CODE, READONLY
+        ENTRY
+        EXPORT START
+
+START
+        MOV     R0, #0          ; R0 = sum = 0
+        MOV     R1, #1          ; R1 = counter = 1
+
+LOOP
+        ADD     R0, R0, R1      ; sum += counter
+        ADD     R1, R1, #1      ; counter++
+        CMP     R1, #11         ; if counter == 11, stop loop
+        BNE     LOOP            ; branch if not equal
+
+STOP
+        B       STOP            ; infinite loop (program end)
+
+        END
