@@ -1,0 +1,45 @@
+PRESERVE8; Preserve 8-byte stack alignment
+THUMB : 16-bit mode
+AREA RESET, DATA, READONLY
+EXPORT _Vectors ; Vector table mapped to address 0
+Vectors
+DCD 0X20001000; Stack pointer value when the stack is
+empty
+DCD START ; Reset vector
+ALIGN
+AREA MY_CODE, CODE, READONLY
+ENTRY
+EXPORT START
+START
+; Initialize the array of 16-bit numbers
+LDR RO, =ARR ; Load the base address of the array
+MOV R1, #0 ; Initialize a 32-bit sum to zero
+MOV R2, #0
+; Calculate the size of the array
+LDR R4, = ARR_END
+SUBS R4, R4, RO
+LSRS R4, R4, #1 ; Divide by 2 to get the number of 16-bit
+elements
+LOOP
+; Load a 16-bit number from the array into R3
+LDRH R3, [R0], #2 ; Load halfword and increment the
+pointer
+; Add the 16-bit number to the 32-bit sum
+ADDS R1, R1, R3
+; Check for overflow and update the carry flag
+ADCS RZ, R2, #0
+; Repeat for the entire array
+SUBS R4, R4, #1
+BNE LOOP ; If not zero, continue the loop
+; At this point, R1 and R2 contain the 32-bit result
+; Store the result in internal RAM (e.g., address 0x20000000)
+LDR R5, =0x20000000 ; Load the address to store the result
+STR RI, [RS] ; Store the lower 16 bits
+STR R2, [RS, #4] ; Store the upper 16 bits
+STOP
+B STOP ; Infinite loop
+; Define the array
+DCW 0x1234, 0x5678, 0x9ABC, 0xDEFO ; Add more
+elements if needed
+ARR_ END
+ALIGN
