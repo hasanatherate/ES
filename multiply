@@ -1,0 +1,21 @@
+        PRESERVE8
+        AREA RESET, DATA, READONLY
+        EXPORT __Vectors
+
+__Vectors
+        DCD     0x20000000      ; Stack pointer value at reset
+        DCD     START           ; Reset vector
+
+        AREA MY_CODE, CODE, READONLY
+        ENTRY
+        EXPORT START
+
+START
+        MOV     R2, #0x2222     ; Load first 16-bit number into R2
+        MOV     R1, #0xABCD     ; Load second 16-bit number into R1
+        MUL     R0, R2, R1      ; R0 = R2 * R1 (result in R0)
+
+STOP
+        B       STOP            ; Infinite loop to stop
+
+        END
