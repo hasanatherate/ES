@@ -1,0 +1,52 @@
+PRESERVE8 ; Preserve 8-byte stack alignment
+THUMB ; 16-bit mode
+AREA RESET, CODE, READONLY; Vector table mapped to
+address 0 at reset
+E X P O R T _Vectors; Linker requires vectors to be
+exported
+Vectors
+DCD 0X20001000 ; Stack pointer value when the stack is
+e m p t y
+DCD START; Reset vector
+ALIGN
+AREA MY_CODE, CODE, READONLY
+EXPORT START; Linker requires START as the user code
+entry point
+; Constants and data (5 numbers in the array)
+ARRAY_SIZE EQU 5; Define the size of the array
+ARRAY_DATA DCD 0x44444444, 0x22222222, 0x11111111,
+0 × 33333333, 0xAAAAAA АА
+S TA RT
+; Load the base address of the array into RO
+LDR RO, = ARRAY_DATA
+; Initialize the largest value with the first element
+LDR R3, [RO]
+; Initialize the loop counter
+MOV R4, #1
+L O O P
+; Load the next number from the array
+LDR R5, [RO, R4, LSL #2]
+; Compare with the current largest and update if
+necessary
+CMP R5, R3
+MOVHI R3, R5; Update largest if R5 > R3
+; Increase the loop counter
+ADD R4, R4, #1
+; Check if the loop counter reaches the ARRAY_SIZE
+CMP R4, #ARRAY_SIZE
+BNE LOOP ; If not, repeat the loop
+S TO P
+B STOP; Branch to an infinite loop
+END
+; Move to the next number
+ADDS RO, RO, #4
+; Decrement the count and check if all numbers have been
+scanned
+SUBS RI, RI, #1
+B N E S C A N L O O P
+; Store the count of negative numbers
+LDR RO, =NEGATIVE_COUNT
+STR R2, [RO]
+S TO P
+B STOP; Branch to an infinite loop
+END ; End
