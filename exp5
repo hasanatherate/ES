@@ -1,0 +1,36 @@
+PRESERVE8 ; Preserve 8-byte stack alignment
+THUMB; 16-bit mode
+AREA RESET, CODE, READONLY ;
+EXPORT _Vectors ; Linker requires_vectors to be
+exported
+Vectors
+DCD 0X20001000 ; Stack pointer value when the stack is
+empty
+DCD START ; Reset vector
+ALIGN
+AREA MY_CODE, CODE, READONLY
+EXPORT START; Linker requires START as the user code
+entry point
+; Lookup table for squares of numbers from 1 to 10
+SQUARE_TABLE DCD 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+; Input number (from 1 to 10)
+NUMBER EQU 7
+; Result for the square
+RESULT DCD 0; Initialize the result to 0
+START
+; Load the address of the SQUARE_TABLE into RO
+LDR RO, =SQUARE_TABLE
+; Calculate the offset in the table based on the input number
+LDR R1, =NUMBER
+SUBS R1, R1, #1 ; Adjust for O-based indexing
+L S R1, R1, #2 ; Multiply the offset by 4 (4 bytes per entry)
+; Add R1 to RO to get the address of the square
+ADD RO, RO, R1
+; Load the square from the lookup table into R1
+LDR R1, [ROJ
+; Store the square result in RESULT
+LDR R2, -RESULT
+STR R1, [R2]
+STOP
+B STOP; Branch to an infinite loop
+END
