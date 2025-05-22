@@ -1,0 +1,33 @@
+PRESERVE ; Preserve 8-byte stack alignment
+THUMB ; 16-bit mode
+AREA RESET, CODE, READONLY; Vector table mapped to
+a d d r e s s 0 at reset
+EXPORT Vectors ; Linker r e q u i r e s vectors to be
+exported Vectors
+DCD 0X20001000 ; Stack pointer value when the stack is
+empty
+DCD START; Reset vector
+A L I G N
+AREA MY_CODE, CODE, READONLY
+EXPORT START; Linker requires START as the user code
+entry point
+START
+; Initialize the number for which you want to calculate the
+factorial
+MOV RO, #5 ; Calculate the factorial of 5 (change this to the
+desired number)
+; Initialize the result to 1
+MOV R1, #1 ; R1 will hold the result
+; Loop to calculate the factorial
+FACTORIAL_LOOP
+; Multiply the result by the current number (RO)
+MUL R1, R1, RO
+; Decrement the number (RO)
+SUBS RO, RO, #1
+; Check if RO is not equal to 0, and branch back to the loop
+label
+BNE FACTORIAL L O O P
+; The factorial result is now in R1
+STOP
+B STOP; Branch to an infinite loop
+E N D
