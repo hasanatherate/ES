@@ -1,0 +1,59 @@
+PRESERVE8; Preserve 8-byte stack alignment
+THUMB ; 16-bit mode
+AREA RESET, CODE, READONLY ; Vector table mapped to
+address 0 at reset
+EXPORT Vectors ; Linker requires v e c t o r s t o be
+exported
+Vectors
+DCD 0X20001000 ; Stack pointer value when the stack is
+empty
+DCD START ; Reset vector
+ALIGN
+AREA MY_CODE, CODE, READONLY
+EXPORT START; Linker requires START as the user code
+entry point
+; Constants and data
+N U M B E R S D C D 0xEDCBA988, 0x72B76799,
+0xCCCCCCCC, OxFFFFFFFF
+; Series of 32-bit numbers
+NEGATIVE CO, CO unCount of negative numbers
+; Load the address of the numbers and the count of numbers
+LDR RO, =NUMBERS
+LDR R1, =COUNT
+LDR R1, [R1]
+; Initialize the negative count
+MOVS R2, #0
+S C A N L O O P
+; Load the current number
+LDR R3, [RO]
+; Check if the number is negative
+LSRS R4, R3, #31
+ADDS R2, R2, R4 ; Increment the negative count if the
+number is negative
+; Move to the next number
+ADDS RO, RO, #4
+; Decrement the count and check if all numbers have been
+scanned
+SUBS R1, R1, #1
+BNE S C A N L O O P
+; Store the count of negative numbers
+LDR RO, =NEGATIVE COUNT
+ANDS R5, R2, #1; Check the least significant bit
+ADD R3, R3, R5; Increment ones counter if it's 1
+EOR R5, R5, #1; Flip the bit
+ADD R4, R4, R5; Increment zeros counter if it's not 1
+; Shift both values to process the next bit
+LSRS R1, R1, #1
+LSRS R2, R2, #1
+; Check if all bits have been processed
+ORRS R6, R1, R2
+CMP R6, #0
+BNE C O U N T L O O P
+; Store the counts of ones and zeros for 0xB0 and 0xED
+LDR RO, =COUNT _ONES
+STR R3, [RO]
+LDR RO, =COUNT_ZEROS
+STR R4, [RO]
+STOP
+B STOP; Branch to an infinite loop
+END; End
